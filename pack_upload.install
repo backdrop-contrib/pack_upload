@@ -7,7 +7,7 @@
  */
 
 /**
- * Implementats hook_uninstall().
+ * Implements hook_uninstall().
  */
 function pack_upload_uninstall() {
   variable_del('pack_upload_bulk_media_path');
