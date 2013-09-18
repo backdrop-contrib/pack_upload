@@ -1,4 +1,10 @@
 <?php
+/**
+ * @file
+ * This is the module file for pack and upload.
+ * 
+ * All hooks are implemented in this file only.
+ */
 
 /**
  * Implements hook_permission().
@@ -74,25 +80,26 @@ function pack_upload_media_upload_form() {
 /**
  * Implements hook_form_submit().
  */
-function pack_upload_media_upload_form_submit(&$form, $form_state) {
+function pack_upload_media_upload_form_submit($form, $form_state) {
   $file = file_save_upload('file', array(
     'file_validate_extensions' => array('zip tar tar.gz'),
     ));
 
   if ($file) {
     if ($file = file_move($file, 'public://')) {
-      
       $form_state['values']['file'] = $file;
       $realpath = drupal_realpath($file->uri);
       $zip = new ZipArchive();
       $zip->open($realpath);
-      $zip->extractTo(variable_get('bulk_media_path'));
+      $zip->extractTo(variable_get('pack_upload_bulk_media_path'));
       $zip->close();
-      drupal_set_message(t('All media have been extracted to %path', array('%path' => variable_get('bulk_media_path'))));
-    } else {
+      drupal_set_message(t('All media have been extracted to %path', array('%path' => variable_get('pack_upload_bulk_media_path'))));
+    } 
+    else {
       form_set_error('file', t('Failed to write the uploaded file the site\'s file folder.'));
     }
-  } else {
+  } 
+  else {
     form_set_error('file', t('No file was uploaded.'));
   }
 }
@@ -105,27 +112,16 @@ function pack_upload_settings_form() {
   $form['panel'] = array(
     '#title' => t('Bulk Media Uploader'),
     '#type' => 'fieldset',
-    '#collapsible' => true,
+    '#collapsible' => TRUE,
   );
-  $form['panel']['bulk_media_path'] = array(
+
+  $form['panel']['pack_upload_bulk_media_path'] = array(
     '#title' => t('Bulk Media Extraction Path'),
     '#type' => 'textfield',
     '#required' => TRUE,
     '#description' => t('Path to media directory from content feeder would upload media to nodes.'),
-    '#default_value' => variable_get('bulk_media_path', 'sites/default/files/bulk_media'),
+    '#default_value' => variable_get('pack_upload_bulk_media_path', 'sites/default/files/bulk_media'),
     '#after_build' => array('system_check_directory')
-  );
-  
-  $form['translation_deletion'] = array(
-    '#title' => t('Translation Deletion'),
-    '#type' => 'fieldset',
-    '#collapsible' => true,
-  );
-  
-  $form['translation_deletion']['pack_upload_content_deletion'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Delete all translations while deleting a content?'),
-    '#default_value' => variable_get('pack_upload_content_deletion', '')
   );
 
   return system_settings_form($form);
