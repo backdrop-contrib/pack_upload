@@ -1,0 +1,132 @@
+<?php
+
+/**
+ * Implements hook_permission().
+ */
+function pack_upload_permission() {
+  return array(
+    'pack and upload' => array(
+      'description' => t('This permission allow a user to upload packed files & assets to server and extract them to a specified directory.'),
+      'title' => t('Use pack & upload'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_menu().
+ */
+function pack_upload_menu() {
+  $items['admin/config/pack-upload'] = array(
+    'title' => 'Pack & Upload',
+    'description' => 'Pack your media & assets, upload them and extract to a specified directory.',
+    'access arguments' => array('pack and upload'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('pack_upload_settings_form'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  $items['admin/config/pack-upload/settings'] = array(
+    'title' => 'Settings',
+    'description' => 'Setup directory for extraction of media & assets pack.',
+    'access arguments' => array('pack and upload'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('pack_upload_settings_form'),
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+  );
+
+  $items['admin/config/pack-upload/bulk-media-upload'] = array(
+    'title' => 'Upload bulk media',
+    'description' => 'Upload bulk media to a directory.',
+    'access arguments' => array('pack and upload'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('pack_upload_media_upload_form'),
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_form().
+ */
+function pack_upload_media_upload_form() {
+  $form = array();
+
+  $form['panel'] = array(
+    '#title' => t('Bulk Media Uploader'),
+    '#type' => 'fieldset',
+  );
+
+  $form['panel']['file'] = array(
+    '#title' => t('Upload file'),
+    '#type' => 'file',
+    '#description' => t('Create package of media files, for e.g., PDFs, images, text files and upload to Drupal. Valid extensions are .zip, .tar.gz, .tar.'),
+  );
+
+  $form['panel']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Submit'),
+  );
+
+  return $form;
+}
+
+/**
+ * Implements hook_form_submit().
+ */
+function pack_upload_media_upload_form_submit(&$form, $form_state) {
+  $file = file_save_upload('file', array(
+    'file_validate_extensions' => array('zip tar tar.gz'),
+    ));
+
+  if ($file) {
+    if ($file = file_move($file, 'public://')) {
+      
+      $form_state['values']['file'] = $file;
+      $realpath = drupal_realpath($file->uri);
+      $zip = new ZipArchive();
+      $zip->open($realpath);
+      $zip->extractTo(variable_get('bulk_media_path'));
+      $zip->close();
+      drupal_set_message(t('All media have been extracted to %path', array('%path' => variable_get('bulk_media_path'))));
+    } else {
+      form_set_error('file', t('Failed to write the uploaded file the site\'s file folder.'));
+    }
+  } else {
+    form_set_error('file', t('No file was uploaded.'));
+  }
+}
+
+/**
+ * Implements hook_form().
+ */
+function pack_upload_settings_form() {
+  
+  $form['panel'] = array(
+    '#title' => t('Bulk Media Uploader'),
+    '#type' => 'fieldset',
+    '#collapsible' => true,
+  );
+  $form['panel']['bulk_media_path'] = array(
+    '#title' => t('Bulk Media Extraction Path'),
+    '#type' => 'textfield',
+    '#required' => TRUE,
+    '#description' => t('Path to media directory from content feeder would upload media to nodes.'),
+    '#default_value' => variable_get('bulk_media_path', 'sites/default/files/bulk_media'),
+    '#after_build' => array('system_check_directory')
+  );
+  
+  $form['translation_deletion'] = array(
+    '#title' => t('Translation Deletion'),
+    '#type' => 'fieldset',
+    '#collapsible' => true,
+  );
+  
+  $form['translation_deletion']['pack_upload_content_deletion'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Delete all translations while deleting a content?'),
+    '#default_value' => variable_get('pack_upload_content_deletion', '')
+  );
+
+  return system_settings_form($form);
+}

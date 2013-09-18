@@ -1,0 +1,3 @@
+name = Pack & Upload
+description = This module packs assets & files in a tar or zip file, uploads them and extract to a specified directory.
+configure = "admin/config/pack-upload"
