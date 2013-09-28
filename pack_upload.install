@@ -12,3 +12,10 @@
 function pack_upload_uninstall() {
   variable_del('pack_upload_bulk_media_path');
 }
+
+/**
+ * Implements hook_install().
+ */
+function pack_upload_install() {
+  variable_set('pack_upload_bulk_media_path', 'sites/default/files/bulk_media');
+}

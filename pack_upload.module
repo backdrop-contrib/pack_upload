@@ -86,7 +86,7 @@ function pack_upload_media_upload_form_submit($form, $form_state) {
     ));
 
   if ($file) {
-    if ($file = file_move($file, 'public://')) {
+    if ($file = file_move($file, variable_get('pack_upload_bulk_media_path'))) {
       $form_state['values']['file'] = $file;
       $realpath = drupal_realpath($file->uri);
       $zip = new ZipArchive();
