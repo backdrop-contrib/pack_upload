@@ -33,7 +33,7 @@ function pack_upload_menu() {
 
   $items['admin/config/pack-upload/settings'] = array(
     'title' => 'Settings',
-    'description' => 'Setup directory for extraction of media & assets pack.',
+    'description' => 'Setup directory name for extraction of media & assets pack. ',
     'access arguments' => array('pack and upload'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('pack_upload_settings_form'),
@@ -66,7 +66,7 @@ function pack_upload_media_upload_form() {
   $form['panel']['file'] = array(
     '#title' => t('Upload file'),
     '#type' => 'file',
-    '#description' => t('Create package of media files, for e.g., PDFs, images, text files and upload to Drupal. Valid extensions are .zip, .tar.gz, .tar.'),
+    '#description' => t('Create package of media files, for e.g., PDFs, images, text files and upload to Drupal. Valid extensions are .zip, .tar.gz, .tar. All files will be extracted to !directory', array('!directory' => file_build_uri(variable_get('pack_upload_bulk_media_path')))),
   );
 
   $form['panel']['submit'] = array(
@@ -84,16 +84,31 @@ function pack_upload_media_upload_form_submit($form, $form_state) {
   $file = file_save_upload('file', array(
     'file_validate_extensions' => array('zip tar tar.gz'),
     ));
-
+  
+  // Created a directory if not available
+  if (!is_dir(variable_get('pack_upload_bulk_media_path'))) {
+    drupal_mkdir(variable_get('pack_upload_bulk_media_path'), variable_get('file_chmod_directory', 755));
+  }
+  // Creating a streamwrapper URI
+  $uri = file_build_uri(variable_get('pack_upload_bulk_media_path'));
+  
   if ($file) {
-    if ($file = file_move($file, variable_get('pack_upload_bulk_media_path'))) {
+    if ($file = file_move($file, $uri, FILE_EXISTS_RENAME)) {
       $form_state['values']['file'] = $file;
       $realpath = drupal_realpath($file->uri);
+      
       $zip = new ZipArchive();
       $zip->open($realpath);
-      $zip->extractTo(variable_get('pack_upload_bulk_media_path'));
+      $result = @$zip->extractTo(drupal_realpath($uri));
+      if ($result === TRUE) {
+        drupal_set_message(t('All media have been extracted to %path', array('%path' => drupal_realpath($uri))));
+      }
+      else {
+        drupal_set_message(t('There is some problem related to extraction of the file. Please upload and try again.'), 'error', FALSE);
+      }
+      
+      //file_delete($file);
       $zip->close();
-      drupal_set_message(t('All media have been extracted to %path', array('%path' => variable_get('pack_upload_bulk_media_path'))));
     }
     else {
       form_set_error('file', t("Failed to write the uploaded file the file folder."));
@@ -120,9 +135,23 @@ function pack_upload_settings_form() {
     '#type' => 'textfield',
     '#required' => TRUE,
     '#description' => t('Path to media directory from content feeder would upload media to nodes.'),
-    '#default_value' => variable_get('pack_upload_bulk_media_path', 'sites/default/files/bulk_media'),
+    '#default_value' => variable_get('pack_upload_bulk_media_path', 'bulk_media'),
     '#after_build' => array('system_check_directory'),
   );
 
   return system_settings_form($form);
+}
+
+/**
+ * Implements hook_file_validate().
+ */
+function pack_upload_file_validate($file) {
+  $result = db_query('SELECT f.fid FROM {file_managed} f WHERE f.uri = :uri', array(':uri' => $file->destination));
+  $output = $result->fetchObject();
+  
+  if (is_object($output)) {
+    $errors[] = t("A file already exist with the same name. Please try uploading by renaming this file.");
+  }
+  
+  return $errors;
 }
