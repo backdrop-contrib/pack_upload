@@ -106,6 +106,7 @@ function pack_upload_media_upload_form_submit($form, $form_state) {
         drupal_set_message(t('All media have been extracted to %path', array('%path' => drupal_realpath($uri))));
       }
       else {
+        watchdog('error', 'There is some problem related to extraction of the file. Please upload and try again.', array(), WATCHDOG_ERROR, NULL);
         drupal_set_message(t('There is some problem related to extraction of the file. Please upload and try again.'), 'error', FALSE);
       }
       
