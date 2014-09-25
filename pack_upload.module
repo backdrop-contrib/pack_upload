@@ -89,10 +89,11 @@ function pack_upload_media_upload_form_submit($form, $form_state) {
   
   // Created a directory if not available
   if (!is_dir(variable_get('pack_upload_bulk_media_path'))) {
-    drupal_mkdir(variable_get('pack_upload_bulk_media_path'), variable_get('file_chmod_directory', 755));
+    drupal_mkdir(variable_get('pack_upload_bulk_media_path'), variable_get('file_chmod_directory', 0755));
+
   }
   // Creating a streamwrapper URI
-  $uri = file_build_uri(variable_get('pack_upload_bulk_media_path'));
+  $uri = variable_get('pack_upload_bulk_media_path');
   
   if ($file) {
     if ($file = file_move($file, $uri, FILE_EXISTS_RENAME)) {
