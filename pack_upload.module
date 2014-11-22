@@ -103,7 +103,7 @@ function pack_upload_media_upload_form() {
 function pack_upload_media_upload_form_submit($form, $form_state) {
   $file = file_save_upload('file', array(
     'file_validate_extensions' => array('zip tar tar.gz'),
-    ),
+    )
   );
   
   // Created a directory if not available.
