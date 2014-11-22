@@ -112,7 +112,6 @@ function pack_upload_media_upload_form_submit($form, $form_state) {
   }
   // Creating a streamwrapper URI.
   $uri = variable_get('pack_upload_bulk_media_path');
-  
   if ($file) {
     if ($file = file_move($file, $uri, FILE_EXISTS_RENAME)) {
       $form_state['values']['file'] = $file;
