@@ -2,7 +2,7 @@
 /**
  * @file
  * This is the module file for pack and upload.
- * 
+ *
  * All hooks are implemented in this file only.
  */
 
@@ -72,7 +72,7 @@ function pack_upload_menu() {
 
 /**
  * Form constructor for the pack and upload media form.
- * 
+ *
  * @ingroup forms
  */
 function pack_upload_media_upload_form() {
@@ -102,8 +102,8 @@ function pack_upload_media_upload_form() {
  */
 function pack_upload_media_upload_form_submit($form, $form_state) {
   $file = file_save_upload('file', array(
-    'file_validate_extensions' => array('zip tar tar.gz')
-    )
+    'file_validate_extensions' => array('zip tar tar.gz'),
+    ),
   );
   
   // Created a directory if not available
@@ -111,14 +111,13 @@ function pack_upload_media_upload_form_submit($form, $form_state) {
     drupal_mkdir(variable_get('pack_upload_bulk_media_path'), variable_get('file_chmod_directory', 0755));
 
   }
-  // Creating a streamwrapper URI
+  // Creating a streamwrapper URI.
   $uri = variable_get('pack_upload_bulk_media_path');
   
   if ($file) {
     if ($file = file_move($file, $uri, FILE_EXISTS_RENAME)) {
       $form_state['values']['file'] = $file;
-      $realpath = drupal_realpath($file->uri);
-      
+      $realpath = drupal_realpath($file->uri);    
       $zip = new ZipArchive();
       $zip->open($realpath);
       $result = @$zip->extractTo(drupal_realpath($uri));
@@ -129,13 +128,11 @@ function pack_upload_media_upload_form_submit($form, $form_state) {
         watchdog('error', 'There is some problem related to extraction of the file. Please upload and try again.', array(), WATCHDOG_ERROR, NULL);
         drupal_set_message(t('There is some problem related to extraction of the file. Please upload and try again.'), 'error', FALSE);
       }
-      
-      //file_delete($file);
       $zip->close();
     }
     else {
       form_set_error('file', t("Failed to write the uploaded file the file folder."));
-    }
+    }  
   }
   else {
     form_set_error('file', t('No file was uploaded.'));
@@ -174,10 +171,8 @@ function pack_upload_file_validate($file) {
   $errors = array();
   $result = db_query('SELECT f.fid FROM {file_managed} f WHERE f.uri = :uri', array(':uri' => $file->destination));
   $output = $result->fetchObject();
-  
   if (is_object($output)) {
     $errors[] = t("A file already exist with the same name. Please try uploading by renaming this file.");
   }
-  
   return $errors;
 }
