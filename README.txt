@@ -3,9 +3,6 @@
                            Pack and Upload Module
 --------------------------------------------------------------------------------
 
-Maintainers: 
- * Divesh Kumar, diveshkumar1983@gmail.com
-
 There are certain situations where a user would require a bulk of files to be 
 uploaded at server. You can take an example of feed import activity where a user
 uploads node using feed importer. There could be an image or file field which 
@@ -59,3 +56,9 @@ directory.
 --------------------------------------------------------------------------------
                                General notes
 --------------------------------------------------------------------------------
+Currently path can be provide as stream wrapper as default path is
+public://bulk_media.
+
+
+Maintainers: 
+ * Divesh Kumar, diveshkumar1983@gmail.com
