@@ -115,7 +115,10 @@ function pack_upload_media_upload_form_submit($form, $form_state) {
   if ($file) {
     if ($file = file_move($file, $uri, FILE_EXISTS_RENAME)) {
       $form_state['values']['file'] = $file;
+      $filename = $file->filename;
+      $ext = pathinfo($filename, PATHINFO_EXTENSION);
       $realpath = drupal_realpath($file->uri);
+      if ($ext == 'zip') {
       $zip = new ZipArchive();
       $zip->open($realpath);
       $result = @$zip->extractTo(drupal_realpath($uri));
@@ -127,6 +130,18 @@ function pack_upload_media_upload_form_submit($form, $form_state) {
         drupal_set_message(t('There is some problem related to extraction of the file. Please upload and try again.'), 'error', FALSE);
       }
       $zip->close();
+    }
+    else {
+        try {
+          $phar = new PharData($realpath);
+          $phar->extractTo(drupal_realpath($uri), null, true); // extract all files, and overwrite
+          drupal_set_message(t('All media have been extracted to %path', array('%path' => drupal_realpath($uri))));
+        }
+        catch (Exception $e) {
+          watchdog('error', 'There is some problem related to extraction of the file. Please upload and try again.', array(), WATCHDOG_ERROR, NULL);
+          drupal_set_message(t('There is some problem related to extraction of the file. Please upload and try again.'), 'error', FALSE);
+        }
+      }
     }
     else {
       form_set_error('file', t("Failed to write the uploaded file the file folder."));
