@@ -5,4 +5,3 @@ package = File Management
 version = 1.2
 backdrop = 1.x
 configure = admin/config/pack-upload
-dependencies[] = token
