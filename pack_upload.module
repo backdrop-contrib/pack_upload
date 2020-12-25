@@ -5,13 +5,12 @@
  */
 
 /**
- * Implements hook_help().
- */
+ * Implements hook_help(). */
 function pack_upload_help($path, $arg) {
   switch ($path) {
     case 'admin/help#pack_upload':
       // Construct the path of this module's readme file.
-      $path_readme = drupal_get_path('module', 'pack_upload') . '/README.txt';
+      $path_readme = backdrop_get_path('module', 'pack_upload') . '/README.txt';
 
       // If the readme is available, return the contents.
       if (file_exists($path_readme)) {
@@ -42,7 +41,7 @@ function pack_upload_menu() {
     'title' => 'Pack & Upload',
     'description' => 'Pack your media & assets, upload them and extract to a specified directory.',
     'access arguments' => array('pack and upload'),
-    'page callback' => 'drupal_get_form',
+    'page callback' => 'backdrop_get_form',
     'page arguments' => array('pack_upload_settings_form'),
     'type' => MENU_NORMAL_ITEM,
   );
@@ -51,7 +50,7 @@ function pack_upload_menu() {
     'title' => 'Settings',
     'description' => 'Setup directory name for extraction of media & assets pack. ',
     'access arguments' => array('pack and upload'),
-    'page callback' => 'drupal_get_form',
+    'page callback' => 'backdrop_get_form',
     'page arguments' => array('pack_upload_settings_form'),
     'type' => MENU_DEFAULT_LOCAL_TASK,
   );
@@ -60,12 +59,22 @@ function pack_upload_menu() {
     'title' => 'Upload bulk media',
     'description' => 'Upload bulk media to a directory.',
     'access arguments' => array('pack and upload'),
-    'page callback' => 'drupal_get_form',
+    'page callback' => 'backdrop_get_form',
     'page arguments' => array('pack_upload_media_upload_form'),
     'type' => MENU_LOCAL_TASK,
   );
 
   return $items;
+}
+
+/**
+ * Implements hook_config_info().
+ */
+function pack_upload_config_info() {
+  $prefixes['pack_upload.settings'] = array(
+    'label' => t('Module name settings'),
+    'group' => t('Configuration'),
+  );
 }
 
 /**
@@ -84,7 +93,7 @@ function pack_upload_media_upload_form() {
   $form['panel']['file'] = array(
     '#title' => t('Upload file'),
     '#type' => 'file',
-    '#description' => t('Create package of media files, for e.g., PDFs, images, text files and upload to Drupal. Valid extensions are .zip, .tar.gz, .tar. All files will be extracted to !directory', array('!directory' => file_build_uri(variable_get('pack_upload_bulk_media_path')))),
+    '#description' => t('Create package of media files, for e.g., PDFs, images, text files and upload to Backdrop. Valid extensions are .zip, .tar.gz, .tar. All files will be extracted to !directory', array('!directory' => file_build_uri(config_get('pack_upload.settings', 'pack_upload_bulk_media_path')))),
   );
 
   $form['panel']['submit'] = array(
@@ -99,19 +108,19 @@ function pack_upload_media_upload_form() {
  * Implements hook_form_submit().
  */
 function pack_upload_media_upload_form_submit($form, $form_state) {
-	global $user;
-	
+  global $user;
+
   $file = file_save_upload('file', array(
     'file_validate_extensions' => array('zip tar tar.gz'),
-    )
+  )
   );
 
-  $pack_upload_bulk_media_path = variable_get('pack_upload_bulk_media_path'); 
+  $pack_upload_bulk_media_path = config_get('pack_upload.settings', 'pack_upload_bulk_media_path');
   $pack_upload_bulk_media_path = token_replace($pack_upload_bulk_media_path, array('user' => $user));
-	
+
   // Created a directory if not available.
   if (!is_dir($pack_upload_bulk_media_path)) {
-    drupal_mkdir($pack_upload_bulk_media_path, variable_get('file_chmod_directory', 0755));
+    backdrop_mkdir($pack_upload_bulk_media_path, settings_get('file_chmod_directory', 0755));
   }
   // Creating a streamwrapper URI.
   $uri = $pack_upload_bulk_media_path;
@@ -120,35 +129,35 @@ function pack_upload_media_upload_form_submit($form, $form_state) {
       $form_state['values']['file'] = $file;
       $filename = $file->filename;
       $ext = pathinfo($filename, PATHINFO_EXTENSION);
-      $realpath = drupal_realpath($file->uri);
+      $realpath = backdrop_realpath($file->uri);
       if ($ext == 'zip') {
-      $zip = new ZipArchive();
-      $zip->open($realpath);
-      $result = @$zip->extractTo(drupal_realpath($uri));
-      if ($result === TRUE) {
-        drupal_set_message(t('All media have been extracted to %path', array('%path' => drupal_realpath($uri))));
+        $zip = new ZipArchive();
+        $zip->open($realpath);
+        $result = @$zip->extractTo(backdrop_realpath($uri));
+        if ($result === TRUE) {
+          backdrop_set_message(t('All media have been extracted to %path', array('%path' => backdrop_realpath($uri))));
+        }
+        else {
+          watchdog('error', 'There is some problem related to extraction of the file. Please upload and try again.', array(), WATCHDOG_ERROR, NULL);
+          backdrop_set_message(t('There is some problem related to extraction of the file. Please upload and try again.'), 'error', FALSE);
+        }
+        $zip->close();
       }
       else {
-        watchdog('error', 'There is some problem related to extraction of the file. Please upload and try again.', array(), WATCHDOG_ERROR, NULL);
-        drupal_set_message(t('There is some problem related to extraction of the file. Please upload and try again.'), 'error', FALSE);
-      }
-      $zip->close();
-    }
-    else {
         try {
           $phar = new PharData($realpath);
-          $phar->extractTo(drupal_realpath($uri), null, true); // extract all files, and overwrite
-          drupal_set_message(t('All media have been extracted to %path', array('%path' => drupal_realpath($uri))));
+          $phar->extractTo(backdrop_realpath($uri), null, true); // extract all files, and overwrite
+          backdrop_set_message(t('All media have been extracted to %path', array('%path' => backdrop_realpath($uri))));
         }
         catch (Exception $e) {
           watchdog('error', 'There is some problem related to extraction of the file. Please upload and try again.', array(), WATCHDOG_ERROR, NULL);
-          drupal_set_message(t('There is some problem related to extraction of the file. Please upload and try again.'), 'error', FALSE);
+          backdrop_set_message(t('There is some problem related to extraction of the file. Please upload and try again.'), 'error', FALSE);
         }
       }
     }
     else {
       form_set_error('file', t("Failed to write the uploaded file the file folder."));
-    }  
+    }
   }
   else {
     form_set_error('file', t('No file was uploaded.'));
@@ -162,6 +171,7 @@ function pack_upload_media_upload_form_submit($form, $form_state) {
  */
 function pack_upload_settings_form() {
 
+  $form['#config'] = 'pack_upload.settings';
   $form['panel'] = array(
     '#title' => t('Bulk Media Uploader'),
     '#type' => 'fieldset',
@@ -173,7 +183,7 @@ function pack_upload_settings_form() {
     '#type' => 'textfield',
     '#required' => TRUE,
     '#description' => t('Path to media directory from content feeder would upload media to nodes. Example: public://bulk_media'),
-    '#default_value' => variable_get('pack_upload_bulk_media_path', 'bulk_media'),
+    '#default_value' => config_get('pack_upload.settings', 'pack_upload_bulk_media_path'),
     '#after_build' => array('system_check_directory'),
   );
 
@@ -185,7 +195,7 @@ function pack_upload_settings_form() {
       '#dialog' => TRUE,
     );
   }
-	
+
   return system_settings_form($form);
 }
 

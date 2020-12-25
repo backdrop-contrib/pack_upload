@@ -1,4 +1,8 @@
+type = module
 name = Pack and Upload
 description = This module packs assets & files in a tar or zip file, uploads them and extract to a specified directory.
+package = File Management
+version = 1.2
+backdrop = 1.x
 configure = admin/config/pack-upload
-core = 7.x
+dependencies[] = token
