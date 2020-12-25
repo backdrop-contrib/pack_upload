@@ -2,8 +2,6 @@
 /**
  * @file
  * This is the module file for pack and upload.
- *
- * All hooks are implemented in this file only.
  */
 
 /**
@@ -101,17 +99,22 @@ function pack_upload_media_upload_form() {
  * Implements hook_form_submit().
  */
 function pack_upload_media_upload_form_submit($form, $form_state) {
+	global $user;
+	
   $file = file_save_upload('file', array(
     'file_validate_extensions' => array('zip tar tar.gz'),
     )
   );
-  
+
+  $pack_upload_bulk_media_path = variable_get('pack_upload_bulk_media_path'); 
+  $pack_upload_bulk_media_path = token_replace($pack_upload_bulk_media_path, array('user' => $user));
+	
   // Created a directory if not available.
-  if (!is_dir(variable_get('pack_upload_bulk_media_path'))) {
-    drupal_mkdir(variable_get('pack_upload_bulk_media_path'), variable_get('file_chmod_directory', 0755));
+  if (!is_dir($pack_upload_bulk_media_path)) {
+    drupal_mkdir($pack_upload_bulk_media_path, variable_get('file_chmod_directory', 0755));
   }
   // Creating a streamwrapper URI.
-  $uri = variable_get('pack_upload_bulk_media_path');
+  $uri = $pack_upload_bulk_media_path;
   if ($file) {
     if ($file = file_move($file, $uri, FILE_EXISTS_RENAME)) {
       $form_state['values']['file'] = $file;
@@ -174,6 +177,15 @@ function pack_upload_settings_form() {
     '#after_build' => array('system_check_directory'),
   );
 
+  if (module_exists('token')) {
+    $form['panel']['tokens_help'] = array(
+      '#theme' => 'token_tree',
+      '#global_types' => TRUE,
+      '#click_insert' => TRUE,
+      '#dialog' => TRUE,
+    );
+  }
+	
   return system_settings_form($form);
 }
 
