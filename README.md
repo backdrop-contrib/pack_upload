@@ -35,6 +35,7 @@ Copy the pack_upload directory to your modules directory and activate the module
 
 * Ported to Backdrop by [djzwerg](https://github.com/djzwerg)
 * Originally developed for Drupal by [diveshkumar](https://github.com/diveshkumar)
+* Token support added by [ram4nd](https://www.drupal.org/u/ram4nd)
 
 ## License
 
