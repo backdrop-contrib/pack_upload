@@ -187,14 +187,14 @@ function pack_upload_settings_form() {
     '#after_build' => array('system_check_directory'),
   );
 
-  if (module_exists('token')) {
-    $form['panel']['tokens_help'] = array(
-      '#theme' => 'token_tree',
-      '#global_types' => TRUE,
-      '#click_insert' => TRUE,
-      '#dialog' => TRUE,
-    );
-  }
+  // Replacement patterns for field.
+  $form['instance']['settings']['filefield_paths']['token_tree'] = array(
+    '#theme'       => 'token_tree',
+    '#token_types' => array('file', $entity_info['token type']),
+    '#dialog'      => TRUE,
+    '#weight'      => 10,
+	'#tree'        => TRUE,
+  );
 
   return system_settings_form($form);
 }
