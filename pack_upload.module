@@ -191,7 +191,6 @@ function pack_upload_settings_form() {
   // Replacement patterns for field.
   $form['instance']['settings']['filefield_paths']['token_tree'] = array(
     '#theme'       => 'token_tree',
-    '#token_types' => array('file', $entity_info['token type']),
     '#dialog'      => TRUE,
     '#weight'      => 10,
 	'#tree'        => TRUE,
