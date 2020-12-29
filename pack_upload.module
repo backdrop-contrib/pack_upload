@@ -30,6 +30,10 @@ function pack_upload_permission() {
       'description' => t('This permission allow a user to upload packed files & assets to server and extract them to a specified directory.'),
       'title' => t('Use pack & upload'),
     ),
+	'administer pack and upload' => array(
+      'title' => t('Administer Pack and Upload'),
+      'description' => t('Change the Pack and Upload upload path.'),
+    ),
   );
 }
 
@@ -39,22 +43,22 @@ function pack_upload_permission() {
 function pack_upload_menu() {
   $items['admin/config/pack-upload'] = array(
     'title' => 'Pack & Upload',
-    'description' => 'Pack your media & assets, upload them and extract to a specified directory.',
+    'description' => 'Upload bulk media to a directory.',
     'access arguments' => array('pack and upload'),
     'page callback' => 'backdrop_get_form',
-    'page arguments' => array('pack_upload_settings_form'),
+    'page arguments' => array('pack_upload_media_upload_form'),
     'type' => MENU_NORMAL_ITEM,
   );
 
   $items['admin/config/pack-upload/settings'] = array(
     'title' => 'Settings',
     'description' => 'Setup directory name for extraction of media & assets pack. ',
-    'access arguments' => array('pack and upload'),
+    'access arguments' => array('administer pack and upload'),
     'page callback' => 'backdrop_get_form',
     'page arguments' => array('pack_upload_settings_form'),
     'type' => MENU_DEFAULT_LOCAL_TASK,
   );
-
+  
   $items['admin/config/pack-upload/bulk-media-upload'] = array(
     'title' => 'Upload bulk media',
     'description' => 'Upload bulk media to a directory.',
