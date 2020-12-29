@@ -11,10 +11,17 @@ By using Pack & Upload this process can be very easy just by following the steps
 
 Note: Make sure you have the right permissions to the directory where you want to upload.
 
+## Requirements
+
+* This module has no requirements yet.
+
 ## Installation
 
-Install this module using the official Backdrop CMS instructions at
-https://backdropcms.org/guide/modules.
+* Install this module using the official Backdrop CMS instructions at
+  https://backdropcms.org/guide/modules.
+
+* Visit the configuration page under Administration > Configuration > Pack & Upload 
+  (admin/config/pack-upload) and enter the required information.
 
 ## Usage
    
@@ -31,6 +38,15 @@ https://backdropcms.org/guide/modules.
 
  * Currently path can be provide as stream wrapper as default path is public://bulk_media.
  * Paths can be set dynamically using tokens. 
+ 
+ ## Issues
+
+Bugs and Feature requests should be reported in the Issue Queue:
+https://github.com/backdrop-contrib/pack_upload/issues.
+
+## Current Maintainers
+
+* Seeking maintainers.
 
 ## Credits
 
