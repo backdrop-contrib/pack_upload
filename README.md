@@ -13,7 +13,8 @@ Note: Make sure you have the right permissions to the directory where you want t
 
 ## Installation
 
-Copy the pack_upload directory to your modules directory and activate the module.
+Install this module using the official Backdrop CMS instructions at
+https://backdropcms.org/guide/modules.
 
 ## Usage
    
