@@ -5,7 +5,8 @@
  */
 
 /**
- * Implements hook_help(). */
+ * Implements hook_help().
+ */
 function pack_upload_help($path, $arg) {
   switch ($path) {
     case 'admin/help#pack_upload':
@@ -41,6 +42,8 @@ function pack_upload_permission() {
  * Implements hook_menu().
  */
 function pack_upload_menu() {
+  $items = array();
+
   $items['admin/config/pack-upload'] = array(
     'title' => 'Pack & Upload',
     'description' => 'Upload bulk media to a directory.',
@@ -56,7 +59,7 @@ function pack_upload_menu() {
     'access arguments' => array('administer pack and upload'),
     'page callback' => 'backdrop_get_form',
     'page arguments' => array('pack_upload_settings_form'),
-    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'type' => MENU_LOCAL_TASK,
   );
   
   $items['admin/config/pack-upload/bulk-media-upload'] = array(
@@ -79,6 +82,7 @@ function pack_upload_config_info() {
     'label' => t('Module name settings'),
     'group' => t('Configuration'),
   );
+  return $prefixes;
 }
 
 /**
@@ -175,20 +179,14 @@ function pack_upload_media_upload_form_submit($form, $form_state) {
  * @ingroup forms
  */
 function pack_upload_settings_form() {
+  $config = config('pack_upload.settings');
 
-  $form['#config'] = 'pack_upload.settings';
-  $form['panel'] = array(
-    '#title' => t('Bulk Media Uploader'),
-    '#type' => 'fieldset',
-    '#collapsible' => TRUE,
-  );
-
-  $form['panel']['pack_upload_bulk_media_path'] = array(
+  $form['pack_upload_bulk_media_path'] = array(
     '#title' => t('Bulk Media Extraction Path'),
     '#type' => 'textfield',
     '#required' => TRUE,
     '#description' => t('Path to media directory from content feeder would upload media to nodes. Example: public://bulk_media'),
-    '#default_value' => config_get('pack_upload.settings', 'pack_upload_bulk_media_path'),
+    '#default_value' => $config->get('pack_upload_bulk_media_path'),
     '#after_build' => array('system_check_directory'),
   );
 
@@ -197,10 +195,25 @@ function pack_upload_settings_form() {
     '#theme'       => 'token_tree',
     '#dialog'      => TRUE,
     '#weight'      => 10,
-	'#tree'        => TRUE,
+    '#tree'        => TRUE,
   );
 
-  return system_settings_form($form);
+  $form['actions']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save configuration'),
+  );
+
+  return $form;
+}
+
+/**
+ * Submit handler for the pack_upload_settings form.
+ */
+function pack_upload_settings_form_submit($form, &$form_state) {
+  $config = config('pack_upload.settings');
+  $config->set('pack_upload_bulk_media_path', $form_state['values']['pack_upload_bulk_media_path']);
+  $config->save();
+  backdrop_set_message(t('The configuration options have been saved.'));
 }
 
 /**
