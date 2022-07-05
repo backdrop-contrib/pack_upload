@@ -46,7 +46,8 @@ https://github.com/backdrop-contrib/pack_upload/issues.
 
 ## Current Maintainers
 
-* Seeking maintainers.
+- [Tim Erickson](https://github.com/stpaultim)
+- Co-maintainers welcome
 
 ## Credits
 
